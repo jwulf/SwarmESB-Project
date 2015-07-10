@@ -7,11 +7,19 @@ A Project Build Structure for SwarmESB
 * Keep your custom code in a separate repository if you need it private.
 * Maintain separation between "the code you write" and "the code you run" - good for testing and release engineering.
 
-Put your customer adapters, swarms, and tests into ```src```. 
+When cloning this project, use the ```--recursive``` switch to get the submodules. That is:
+
+```
+git clone --recursive {url}
+```
+
+After cloning this project, put your customer adapters, swarms, and tests into ```src```. 
 
 To build, run ```gulp build```.
 
 This copies SwarmESB into ```build```, then copies your custom adapters, swarms, and tests.
+
+Run the ESB using ```container/dev-start.sh``` while testing your build in development. Use ```build.sh``` to build a Docker image.
 
 You can use a git submodule from another repository as your ```src``` folder. This allows you to track the upstream SwarmESB, track changes from this project structure, and maintain your private code on a private server.
 
