@@ -40,7 +40,7 @@ gulp.task('build:esb', function () {
 gulp.task('copy-all-the-things', function (){
   //copy all the src files to add to or overwrite the base ESB
   // and install any necessary package dependencies
-  return gulp.src(paths.src + '/**/*')
+  return gulp.src(paths.SRC + '/**/*')
     .pipe(ignore.exclude('./build-scripts'))
     .pipe(ignore.exclude('./**/README.md'))
     .pipe(gulp.dest(paths.DEST))
