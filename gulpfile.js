@@ -7,7 +7,7 @@ var exec = require('child_process').exec;
 var git = require('gulp-git');
 var del = require('del');
  
-var gitbranch = 'my-production';
+var gitbranch = process.env.SWARMESB_BRANCH || 'my-production';
  
 var src_path = process.env.SWARMESB_SRC_PATH || 'src';
 
