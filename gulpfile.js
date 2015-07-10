@@ -1,13 +1,11 @@
 var gulp = require('gulp');
-var changed = require('gulp-changed');
 var ignore = require('gulp-ignore');
 var install = require("gulp-install");
 var runSequence = require('run-sequence');
 var rename = require('gulp-rename');
 var exec = require('child_process').exec;
 var git = require('gulp-git');
-var rimraf = require('rimraf');
-var fs = require('fs');
+var del = require('del');
  
 var gitbranch = 'my-production';
  
@@ -26,29 +24,33 @@ gulp.task('checkout', function(){
   });
 });
  
- gulp.task('clean-builddir', function (cb) {
-    rimraf(paths.DEST+'/*', cb);
-}); 
+ gulp.task('clean:build', function (cb) {
+  del([
+    // here we use a globbing pattern to match everything inside the `mobile` folder
+    paths.DEST+'/**/*'
+  ], cb);
+});
 
-gulp.task('build-esb', function () {
+gulp.task('build:esb', function () {
   return gulp.src(paths.ESB)
-    .pipe(ignore('.git*'))
+    .pipe(ignore.exclude('.git*'))
     .pipe(gulp.dest(paths.DEST));
 });
 
 gulp.task('copy-all-the-things', function (){
   //copy all the src files to add to or overwrite the base ESB
   // and install any necessary package dependencies
-  return gulp.src('src/**/*')
-    .ignore('build-scripts')
+  return gulp.src(paths.src + '/**/*')
+    .pipe(ignore.exclude('./build-scripts'))
+    .pipe(ignore.exclude('./**/README.md'))
     .pipe(gulp.dest(paths.DEST))
     .pipe(install());; 
 });
 
 gulp.task('build', function (cb) {
   runSequence(
-    'clean-builddir',
-    'build-esb',
+    'clean:build',
+    'build:esb',
     'copy-all-the-things',
     cb);
 });
