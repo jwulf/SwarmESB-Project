@@ -1,12 +1,12 @@
 {
-  "name": "atmaesb",
+  "name": "SwarmESB-Project-Structure",
   "version": "1.0.0",
-  "description": "Atma Yoga ESB",
+  "description": "A Build Structure for SwarmESB projects",
   "main": "gulpfile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Joshua Wulf <joshua@atmayoga.com.au>",
+  "author": "Joshua Wulf <sitapati@worldsankirtan.net>",
   "license": "ISC",
   "devDependencies": {
     "gulp": "^3.9.0",
