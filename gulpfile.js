@@ -11,9 +11,11 @@ var fs = require('fs');
  
 var gitbranch = 'my-production';
  
+var src_path = process.env.SWARMESB_SRC_PATH || 'src';
+
 var paths = {
   ESB: 'SwarmESB/**',
-  SRC: 'src',
+  SRC: src_path,
   DEST: 'build',
 };
 
@@ -38,6 +40,7 @@ gulp.task('copy-all-the-things', function (){
   //copy all the src files to add to or overwrite the base ESB
   // and install any necessary package dependencies
   return gulp.src('src/**/*')
+    .ignore('build-scripts')
     .pipe(gulp.dest(paths.DEST))
     .pipe(install());; 
 });

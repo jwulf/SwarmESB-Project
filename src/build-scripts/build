@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# should be run from the SwarmESB-Project folder as
+# src/build-scripts/build
+
+# This exists to allow you to maintain src as a custom git submodule from a private repository
+# Base it on this one, and give it a name other than 'src', and change the variable below
+# to match the name you use:
+
+export SWARMESB_SRC_PATH='src'
+gulp build
