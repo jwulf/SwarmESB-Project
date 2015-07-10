@@ -1,0 +1,22 @@
+{
+  "name": "atmaesb",
+  "version": "1.0.0",
+  "description": "Atma Yoga ESB",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joshua Wulf <joshua@atmayoga.com.au>",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-changed": "^1.2.1",
+    "gulp-git": "^1.2.4",
+    "gulp-ignore": "^1.2.1",
+    "gulp-install": "^0.4.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-rimraf": "^0.1.1",
+    "rimraf": "^2.4.1",
+    "run-sequence": "^1.1.1"
+  }
+}

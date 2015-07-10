@@ -1,0 +1,3 @@
+[submodule "SwarmESB"]
+	path = SwarmESB
+	url = git@github.com:jwulf/SwarmESB.git
