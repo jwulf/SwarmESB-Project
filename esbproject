@@ -99,12 +99,14 @@ function compileProject(_dir) {
   // Load the project config if one exists
   var projectConfigFile = path.join(dir, '/meta/esb-project-config.js');
   if (fs.existsSync(projectConfigFile)) {
-  	projectConfig = require(projectConfigFile).config;
+  	projectConfig = require('./' + projectConfigFile).config;
   	
-    // could make an array of key:values for extensibility
-  	if (projectConfig.SwarmESBGitBranch) {
-  		process.env.SWARMESB_BRANCH = projectConfig.SwarmESBGitBranch;
-  	}
+    if (projectConfig) {
+      // could make an array of key:values for extensibility
+    	if (projectConfig.SwarmESBGitBranch) {
+    		process.env.SWARMESB_BRANCH = projectConfig.SwarmESBGitBranch;
+    	}
+    }
   }
   
   // Log wiring: https://github.com/gulpjs/gulp/issues/770#issuecomment-87800393

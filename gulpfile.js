@@ -16,7 +16,9 @@ var gitbranch = process.env.SWARMESB_BRANCH || null;
 var project_path = process.env.SWARMESB_SRC_PATH;
 
 gutil.log(chalk.magenta('Working with project code from '), chalk.green(project_path));
-gutil.log(chalk.magenta('Using SwarmESB git branch '), chalk.green(gitbranch));
+if (gitbranch) {
+  gutil.log(chalk.magenta('Using SwarmESB git branch '), chalk.green(gitbranch));
+}
 
 var paths = {
   ESB: 'SwarmESB/**',
@@ -64,7 +66,7 @@ gulp.task('builder:copy-all-the-things', function (){
 
 gulp.task('builder:invoke-project-compile-task', function () {
   // Execute custom build tasks from projects
-  var projectGulpFile = './' + src_path + '/meta/gulpfile.js';
+  var projectGulpFile = './' + project_path + '/meta/gulpfile.js';
   if (fs.existsSync(projectGulpFile)) {
     require(projectGulpFile);
     if (gulp.tasks['project:compile']) {
