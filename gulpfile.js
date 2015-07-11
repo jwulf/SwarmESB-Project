@@ -4,6 +4,7 @@ var install = require("gulp-install");
 var runSequence = require('run-sequence');
 var rename = require('gulp-rename');
 var exec = require('child_process').exec;
+var execSync = require('child_process').execSync;
 var git = require('gulp-git');
 var del = require('del');
 var chalk = require('chalk');
@@ -14,6 +15,13 @@ var path = require("path");
 
 var gitbranch = process.env.SWARMESB_BRANCH || null;
 var project_path = process.env.SWARMESB_SRC_PATH;
+
+if (!project_path) {
+  console.log(chalk.red('Error: SWARMESB_SRC_PATH not set'));
+  console.log('You need to set SWARMESB_SRC_PATH to point to your project directory.');
+  console.log('The ' + chalk.magenta('esbproject') + ' program does this for you. You should probably use that.');
+  process.exit();
+}
 
 gutil.log(chalk.magenta('Working with project code from '), chalk.green(project_path));
 if (gitbranch) {
@@ -91,7 +99,7 @@ gulp.task('builder:compile', function (cb) {
 });
 
 gulp.task('builder:run', ['builder:compile'], function () {
-  exec('bash container/start-dev.sh', {cwd: 'build/'}, function (err, stdout, stderr) {
+  exec('bash container/start-dev.sh', {cwd: './' + project_path + 'build/'}, function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
   });
