@@ -13,39 +13,16 @@ When cloning this project, use the ```--recursive``` switch to get the submodule
 git clone --recursive {url}
 ```
 
-After cloning this project, put your customer adapters, swarms, and tests into ```src```. 
+To create a new project, run ```./esbproject new {projectname}```.
 
-To build, run ```gulp build```.
+This creates a new project structure in ```projects/{projectname}```.
 
-This copies SwarmESB into ```build```, then copies your custom adapters, swarms, and tests.
+Edit your custom adapters, swarms, tests, and other code in there.
+
+Then run ```./esbproject compile {projectname}```.
+
+This compiles SwarmESB and your custom code in ```/projects/{projectname}/build```.
+
+You can create custom build steps in ```/projects/{projectname}/meta/gulpfile.js```.
 
 Run the ESB using ```container/dev-start.sh``` while testing your build in development. Use ```build.sh``` to build a Docker image.
-
-You can use a git submodule from another repository as your ```src``` folder. This allows you to track the upstream SwarmESB, track changes from this project structure, and maintain your private code on a private server.
-
-To do this: copy the ```src``` folder to the new git submodule, and edit ```src/build-scripts/build``` to set the name of your source submodule.
-
-For example: if you were to host your custom code in a private repository called ```custom-code```, starting with an empty repository you would do:
-
-```
-cd SwarmESB
-git submodule add https://myprivategitrepo.com/custom-code
-cd custom-code
-git submodule init
-git submodule update
-cp ./../src/* .
-```
-Then edit ```custom-code/build-scripts/build``` and set:
-
-```
-export SWARMESB_SRC_PATH='custom-code'
-```
-
-Then add and commit your code as per normal in the ```custom-code``` directory.
-
-Now, to build the project you would execute:
-
-```
-cd SwarmESB
-custom-code/build-scripts/build
-```
