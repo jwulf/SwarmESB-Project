@@ -16,7 +16,7 @@ var fs = require('fs');
 var path = require("path");
 
 var PROJECT_TEMPLATE = './meta/project-template';
-var PROJECTS_DIR = './projects';
+var PROJECTS_DIR = 'projects';
 
 // Clunky - it's worth switching over to commander now
 if (argv._.length < 2 || 
