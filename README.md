@@ -41,4 +41,4 @@ To start the ESB in development mode, run:
 ```./esbproject run {projectname}```
 
 This compiles the project and then starts it on your local machine.
-Run the ESB using ```container/dev-start.sh``` while testing your build in development. Use ```build.sh``` to build a Docker image.
+
