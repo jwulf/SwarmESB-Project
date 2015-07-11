@@ -12,16 +12,33 @@ When cloning this project, use the ```--recursive``` switch to get the submodule
 git clone --recursive {url}
 ```
 
-To create a new project, run ```./esbproject new {projectname}```.
+## Create a new project
+
+To create a new project, run:
+
+```./esbproject new {projectname}```.
 
 This creates a new project structure in ```projects/{projectname}```.
 
 Edit your custom adapters, swarms, tests, and other code in there.
 
-Then run ```./esbproject compile {projectname}```.
+## Compile a project
+
+To compile your custom code with the SwarmESB, run:
+
+```./esbproject compile {projectname}```.
 
 This compiles SwarmESB and your custom code in ```/projects/{projectname}/build```.
 
+### Custom build steps
+
 You can create custom build steps in ```/projects/{projectname}/meta/gulpfile.js```.
 
+## Run a project
+
+To start the ESB in development mode, run:
+
+```./esbproject run {projectname}```
+
+This compiles the project and then starts it on your local machine.
 Run the ESB using ```container/dev-start.sh``` while testing your build in development. Use ```build.sh``` to build a Docker image.
