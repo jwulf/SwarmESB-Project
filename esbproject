@@ -14,28 +14,35 @@ var argv = require('minimist')(process.argv.slice(2));
 var gulp = require('gulp');
 var fs = require('fs');
 var path = require("path");
+var program = require('commander')
 
 var PROJECT_TEMPLATE = './meta/project-template';
 var PROJECTS_DIR = 'projects';
 
-// Clunky - it's worth switching over to commander now
-if (argv._.length < 2 || 
-    (argv._[0] != 'new' && argv._[0] != 'compile')
-    ) {
-  console.log('Usage: esbproject <command> <projectname>');
-  console.log('Supported commands: ');
-  console.log(chalk.red('new') + ' - create new project');
-  console.log(chalk.red('compile') + ' - compile project');  
-  process.exit();
-}
-
-var command = argv._[0];
-
-// Use the first command-line argument, or default to 'new-project'
-var projectName = argv._[1] || 'new-project';
-
-if (argv._[0] == 'compile') { compileProject(projectName); }
-if (argv._[0] == 'new') { newProject(projectName); }
+program
+  .command('new <project>')
+  .description('create a new project')
+  .action(function(project, options){
+    newProject(projectName);
+  });
+  
+program
+  .command('compile <project>')
+  .description('compile project')
+  .action(function(project, options){
+    gulpProject(project, 'builder:compile');
+  });
+ 
+program
+  .command('run <project>')
+  .description('run project')
+  .action(function(project, options){
+    gulpProject(project, 'builder:run');
+  });
+   
+  
+program.parse(process.argv);
+  
 
 function newProject(_dir) {
   var newProjectDir = path.join(PROJECTS_DIR, _dir);
@@ -61,7 +68,7 @@ function newProject(_dir) {
   gulp.start('builder:new_project');
 }
 
-function compileProject(_dir) {
+function gulpProject(_dir, gulptask) {
 
 // Gulp invocation inspired by: https://github.com/gulpjs/gulp/issues/770
 
@@ -185,8 +192,8 @@ function compileProject(_dir) {
    // gulp.start will be deprecated in favor of gulp.series and gulp.parallel soon
    // ref: https://github.com/gulpjs/gulp/issues/355
    
-  if( gulp.tasks['builder:compile'] ){ 
-  	gulp.start('builder:compile'); 
+  if( gulp.tasks[gulptask] ){ 
+  	gulp.start(gulptask); 
   }
   else {
    	console.log('No builder:compile task found. Did the gulpfile.js load?');
