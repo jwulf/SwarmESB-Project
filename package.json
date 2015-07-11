@@ -9,14 +9,16 @@
   "author": "Joshua Wulf <sitapati@worldsankirtan.net>",
   "license": "ISC",
   "devDependencies": {
+    "chalk": "^1.1.0",
     "del": "^1.2.0",
     "gulp": "^3.9.0",
-    "gulp-changed": "^1.2.1",
     "gulp-git": "^1.2.4",
     "gulp-ignore": "^1.2.1",
     "gulp-install": "^0.4.0",
     "gulp-rename": "^1.2.2",
-    "gulp-rimraf": "^0.1.1",
+    "gulp-util": "^3.0.6",
+    "minimist": "^1.1.1",
+    "pretty-hrtime": "^1.0.0",
     "run-sequence": "^1.1.1"
   }
 }

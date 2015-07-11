@@ -1,0 +1,133 @@
+#!/usr/bin/env node
+
+/*
+Invoke 'gulp build' and build from a specific source tree.
+If passed an argument, that is the source directory.
+Otherwise defaults to 'src'
+
+Gulp invocation inspired by: https://github.com/gulpjs/gulp/issues/770
+*/
+
+var gutil = require('gulp-util');
+var prettyTime = require('pretty-hrtime');
+var chalk = require('chalk');
+var exec = require('child_process').execSync;
+var argv = require('minimist')(process.argv.slice(2));
+var gulp = require('gulp');
+var fs = require('fs');
+
+// Use the first command-line argument, or default to 'src'
+var dir = argv._[0] || 'src'
+
+// This environment variable is used by gulp to determine which
+// source tree to use when building the project.
+process.env.SWARMESB_SRC_PATH = dir;
+
+// Check if the source tree exists
+if (!fs.existsSync(dir)) {
+	console.log('Directory ' + dir + ' not found!');
+	process.exit();
+}
+
+// Get the Project Builder gulpfile.js
+require('./gulpfile.js');
+
+var projectConfig = {};
+
+// Load the project config if one exists
+if (fs.existsSync(dir + '/esb-project-config.js')) {
+	projectConfig = require('./' + dir + '/esb-project-config.js').config;
+	
+	if (projectConfig.SwarmESBGitBranch) {
+		process.env.SWARMESB_BRANCH = projectConfig.SwarmESBGitBranch;
+	}
+}
+
+// Log wiring: https://github.com/gulpjs/gulp/issues/770#issuecomment-87800393
+
+// Wire up logging events
+function logEvents(gulpInst) {
+
+  // Total hack due to poor error management in orchestrator
+  gulpInst.on('err', function() {
+    failed = true;
+  });
+
+  gulpInst.on('task_start', function(e) {
+    // TODO: batch these
+    // so when 5 tasks start at once it only logs one time with all 5
+    gutil.log('Starting', '\'' + chalk.cyan(e.task) + '\'...');
+  });
+
+  gulpInst.on('task_stop', function(e) {
+    var time = prettyTime(e.hrDuration);
+    gutil.log(
+      'Finished', '\'' + chalk.cyan(e.task) + '\'',
+      'after', chalk.magenta(time)
+    );
+  });
+
+  gulpInst.on('task_err', function(e) {
+    var msg = formatError(e);
+    var time = prettyTime(e.hrDuration);
+    gutil.log(
+      '\'' + chalk.cyan(e.task) + '\'',
+      chalk.red('errored after'),
+      chalk.magenta(time)
+    );
+    gutil.log(msg);
+  });
+
+  gulpInst.on('task_not_found', function(err) {
+    gutil.log(
+      chalk.red('Task \'' + err.task + '\' is not in your gulpfile')
+    );
+    gutil.log('Please check the documentation for proper gulpfile formatting');
+    process.exit(1);
+  });
+}
+
+// Format orchestrator errors
+function formatError(e) {
+  if (!e.err) {
+    return e.message;
+  }
+
+  // PluginError
+  if (typeof e.err.showStack === 'boolean') {
+    return e.err.toString();
+  }
+
+  // Normal error
+  if (e.err.stack) {
+    return e.err.stack;
+  }
+
+  // Unknown (string, number, etc.)
+  return new Error(String(e.err)).stack;
+}
+
+
+// Wire up logging with our gulp instance
+// Usually done in the command-line client
+logEvents(gulp);
+
+process.nextTick(function(){
+
+ var tasks = gulp.tasks;
+ 
+ // gulp.start will be deprecated in favor of gulp.series and gulp.parallel soon
+ // ref: https://github.com/gulpjs/gulp/issues/355
+ 
+if( gulp.tasks['builder:build'] ){ 
+	gulp.start('builder:build'); 
+}
+else {
+ 	console.log('No build task found. Did the gulpfile.js load?');
+ 	};
+});
+
+// TODO: A mechanism for invoking custom build events from the project directory
+// when the build process is finished.
+
+
