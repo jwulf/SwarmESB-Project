@@ -1,6 +1,6 @@
 # SwarmESB-Project
 
-A Project Build Structure for SwarmESB
+A Project Build Structure for [SwarmESB](https://github.com/salboaie/SwarmESB).
 
 * Track the upstream SwarmESB project and cherry pick changes / releases while you develop. 
 * Keep your custom code in a private repo (if you want).
