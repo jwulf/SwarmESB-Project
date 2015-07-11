@@ -2,10 +2,9 @@
 
 A Project Build Structure for SwarmESB
 
-* Maintain a separation of concern between the upstream SwarmESB project and your custom code. 
-* Track upstream changes easily.
-* Keep your custom code in a separate repository if you need it private.
-* Maintain separation between "the code you write" and "the code you run" - good for testing and release engineering.
+* Track the upstream SwarmESB project and cherry pick changes / releases while you develop. 
+* Keep your custom code in a private repo (if you want).
+* Separate "the code you write" and "the code you run".
 
 When cloning this project, use the ```--recursive``` switch to get the submodules. That is:
 
