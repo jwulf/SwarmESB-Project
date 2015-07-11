@@ -1,3 +1,6 @@
 [submodule "SwarmESB"]
 	path = SwarmESB
 	url = git@github.com:jwulf/SwarmESB.git
+[submodule "projects/atma-esb"]
+	path = projects/atma-esb
+	url = git@gitlab.atmayoga.com.au:jwulf/atma-esb.git
