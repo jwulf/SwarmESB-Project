@@ -99,7 +99,8 @@ gulp.task('builder:compile', function (cb) {
 });
 
 gulp.task('builder:run', ['builder:compile'], function () {
-  exec('bash container/start-dev.sh', {cwd: './' + project_path + 'build/'}, function (err, stdout, stderr) {
+  console.log('Starting the ESB...');
+  exec('bash container/dev-start.sh', {cwd: path.join(process.env.PWD,project_path,'build/')}, function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
   });
