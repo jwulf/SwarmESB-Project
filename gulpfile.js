@@ -10,34 +10,41 @@ var chalk = require('chalk');
 var gutil = require('gulp-util');
 var fs = require('fs');
 var debug = require('debug')('Project Gulp'); 
+var path = require("path");
 
-var gitbranch = process.env.SWARMESB_BRANCH || 'my-production';
-var src_path = process.env.SWARMESB_SRC_PATH || 'src';
+var gitbranch = process.env.SWARMESB_BRANCH || null;
+var project_path = process.env.SWARMESB_SRC_PATH;
 
-gutil.log(chalk.magenta('Working with project code from '), chalk.green(src_path));
+gutil.log(chalk.magenta('Working with project code from '), chalk.green(project_path));
 gutil.log(chalk.magenta('Using SwarmESB git branch '), chalk.green(gitbranch));
 
 var paths = {
   ESB: 'SwarmESB/**',
-  SRC: src_path,
-  DEST: 'build',
+  SRC: path.join(project_path, '/src'),
+  DEST: path.join(project_path, '/build'),
 };
 
 // Create and switch to a git branch 
 gulp.task('builder:checkout', function(){
-  git.checkout(gitbranch, function (err) {
-    if (err) throw err;
-  });
+  if (gitbranch) {
+    git.checkout(gitbranch, function (err) {
+      if (err) throw err;
+    });
+  }
 });
  
  gulp.task('builder:clean:build', function (cb) {
+   // If the build directory doesn't exist, let's create it
+   if (!fs.existsSync(paths.DEST)) {
+     fs.mkdirSync(paths.DEST);
+   }
   del([
     // here we use a globbing pattern to match everything inside the `mobile` folder
     paths.DEST+'/**/*'
   ], cb);
 });
 
-gulp.task('builder:build:esb', function () {
+gulp.task('builder:compile:esb', function () {
   return gulp.src(paths.ESB)
     .pipe(ignore.exclude('.git*'))
     .pipe(gulp.dest(paths.DEST));
@@ -48,40 +55,40 @@ gulp.task('builder:copy-all-the-things', function (){
   // and install any necessary package dependencies
   return gulp.src([
     paths.SRC + '/**/*', 
-    '!' + paths.SRC + '/esb-project-config.js',
-    '!' + paths.SRC + '/**/README.md',
-    '!' + paths.SRC + '/gulpfile.js'
+    '!' + paths.SRC + '/meta',
+    '!' + paths.SRC + '/**/README.md'
     ])
     .pipe(gulp.dest(paths.DEST))
     .pipe(install());; 
 });
 
-gulp.task('builder:invoke-project-build-task', function () {
+gulp.task('builder:invoke-project-compile-task', function () {
   // Execute custom build tasks from projects
-  if (fs.existsSync('./' + src_path + '/gulpfile.js')) {
-    require('./' + src_path + '/gulpfile.js');
-    if (gulp.tasks['project:build']) {
-        gulp.start('project:build');
+  var projectGulpFile = './' + src_path + '/meta/gulpfile.js';
+  if (fs.existsSync(projectGulpFile)) {
+    require(projectGulpFile);
+    if (gulp.tasks['project:compile']) {
+        gulp.start('project:compile');
       }  else {
       gutil.log(
-        chalk.green("'project:build' task "), 
+        chalk.green("'project:compile' task "), 
         chalk.red(' not found in '),
-        chalk.red(src_path + '/gulpfile.js!')
+        chalk.red(projectGulpFile)
         );   
       }    
   }
 });
 
-gulp.task('builder:build', function (cb) {
+gulp.task('builder:compile', function (cb) {
   runSequence(
     'builder:clean:build',
-    'builder:build:esb',
+    'builder:compile:esb',
     'builder:copy-all-the-things',
-    'builder:invoke-project-build-task',
+    'builder:invoke-project-compile-task',
     cb);
 });
 
-gulp.task('builder:run', ['builder:build'], function () {
+gulp.task('builder:run', ['builder:compile'], function () {
   exec('bash container/start-dev.sh', {cwd: 'build/'}, function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -92,7 +99,7 @@ gulp.task('builder:build-docker-image', function (){
   	  // Not implemented yet
 });
 
-gulp.task('builder:build-docker', ['builder:build'], function (cb) {
+gulp.task('builder:build-docker', ['builder:compile'], function (cb) {
   runSequence(
     'builder:build-docker-image',
     cb);

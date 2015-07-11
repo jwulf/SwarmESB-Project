@@ -1,0 +1,195 @@
+#!/usr/bin/env node
+
+/*
+Use esbproject new {projectname} to create a new project
+
+Use esbproject compile {projectname} to compile a project
+*/
+
+var gutil = require('gulp-util');
+var prettyTime = require('pretty-hrtime');
+var chalk = require('chalk');
+var exec = require('child_process').execSync;
+var argv = require('minimist')(process.argv.slice(2));
+var gulp = require('gulp');
+var fs = require('fs');
+var path = require("path");
+
+var PROJECT_TEMPLATE = './meta/project-template';
+var PROJECTS_DIR = './projects';
+
+// Clunky - it's worth switching over to commander now
+if (argv._.length < 2 || 
+    (argv._[0] != 'new' && argv._[0] != 'compile')
+    ) {
+  console.log('Usage: esbproject <command> <projectname>');
+  console.log('Supported commands: ');
+  console.log(chalk.red('new') + ' - create new project');
+  console.log(chalk.red('compile') + ' - compile project');  
+  process.exit();
+}
+
+var command = argv._[0];
+
+// Use the first command-line argument, or default to 'new-project'
+var projectName = argv._[1] || 'new-project';
+
+if (argv._[0] == 'compile') { compileProject(projectName); }
+if (argv._[0] == 'new') { newProject(projectName); }
+
+function newProject(_dir) {
+  var newProjectDir = path.join(PROJECTS_DIR, _dir);
+  if (fs.existsSync(newProjectDir)) {
+    console.log('Project directory ' + newProjectDir + ' already exists!');
+    process.exit();
+  }
+  gulp.task('builder:copyfiles', function() {
+    fs.mkdirSync(newProjectDir);
+    return gulp.src([PROJECT_TEMPLATE + '/**/*', '!' + PROJECT_TEMPLATE + '/README.md'])
+      .pipe(gulp.dest(newProjectDir));
+  });
+  gulp.task('builder:new_project', ['builder:copyfiles'], function () {
+      if (fs.existsSync(newProjectDir)) {
+        console.log('Project ' + projectName + ' created in ' + newProjectDir);
+        process.exit();
+      } else {
+        console.log('Something went wrong. ');
+        console.log('Project ' + projectName + ' *not* created in ' + newProjectDir);
+        process.exit();
+      }
+  });
+  gulp.start('builder:new_project');
+}
+
+function compileProject(_dir) {
+
+// Gulp invocation inspired by: https://github.com/gulpjs/gulp/issues/770
+
+  var dir;
+  
+  // They can use the name of the project or the relative path to the project directory
+  if (_dir.indexOf(PROJECTS_DIR) == -1) {
+    dir = path.join(PROJECTS_DIR, _dir)
+  } else {
+    dir = _dir;
+  }
+  
+  // This environment variable is used by gulp to determine which
+  // source tree to use when building the project.
+  process.env.SWARMESB_SRC_PATH = dir;
+  
+  if (dir == PROJECT_TEMPLATE) {
+    console.log("Don't compile the project-template. Create a new project and compile that.");
+    process.exit();
+  }
+  
+  // Check if the source tree exists
+  if (!fs.existsSync(dir)) {
+  	console.log('Project directory ' + dir + ' not found!');
+  	process.exit();
+  }
+  
+  // Get the Project Builder gulpfile.js
+  require('./gulpfile.js');
+  
+  var projectConfig = {};
+  
+  
+  
+  // Load the project config if one exists
+  var projectConfigFile = path.join(dir, '/meta/esb-project-config.js');
+  if (fs.existsSync(projectConfigFile)) {
+  	projectConfig = require(projectConfigFile).config;
+  	
+    // could make an array of key:values for extensibility
+  	if (projectConfig.SwarmESBGitBranch) {
+  		process.env.SWARMESB_BRANCH = projectConfig.SwarmESBGitBranch;
+  	}
+  }
+  
+  // Log wiring: https://github.com/gulpjs/gulp/issues/770#issuecomment-87800393
+  
+  // Wire up logging events
+  function logEvents(gulpInst) {
+  
+    // Total hack due to poor error management in orchestrator
+    gulpInst.on('err', function() {
+      failed = true;
+    });
+  
+    gulpInst.on('task_start', function(e) {
+      // TODO: batch these
+      // so when 5 tasks start at once it only logs one time with all 5
+      gutil.log('Starting', '\'' + chalk.cyan(e.task) + '\'...');
+    });
+  
+    gulpInst.on('task_stop', function(e) {
+      var time = prettyTime(e.hrDuration);
+      gutil.log(
+        'Finished', '\'' + chalk.cyan(e.task) + '\'',
+        'after', chalk.magenta(time)
+      );
+    });
+  
+    gulpInst.on('task_err', function(e) {
+      var msg = formatError(e);
+      var time = prettyTime(e.hrDuration);
+      gutil.log(
+        '\'' + chalk.cyan(e.task) + '\'',
+        chalk.red('errored after'),
+        chalk.magenta(time)
+      );
+      gutil.log(msg);
+    });
+  
+    gulpInst.on('task_not_found', function(err) {
+      gutil.log(
+        chalk.red('Task \'' + err.task + '\' is not in your gulpfile')
+      );
+      gutil.log('Please check the documentation for proper gulpfile formatting');
+      process.exit(1);
+    });
+  }
+  
+  // Format orchestrator errors
+  function formatError(e) {
+    if (!e.err) {
+      return e.message;
+    }
+  
+    // PluginError
+    if (typeof e.err.showStack === 'boolean') {
+      return e.err.toString();
+    }
+  
+    // Normal error
+    if (e.err.stack) {
+      return e.err.stack;
+    }
+  
+    // Unknown (string, number, etc.)
+    return new Error(String(e.err)).stack;
+  }
+  
+  
+  // Wire up logging with our gulp instance
+  // Usually done in the command-line client
+  logEvents(gulp);
+  
+  process.nextTick(function(){
+  
+   var tasks = gulp.tasks;
+   
+   // gulp.start will be deprecated in favor of gulp.series and gulp.parallel soon
+   // ref: https://github.com/gulpjs/gulp/issues/355
+   
+  if( gulp.tasks['builder:compile'] ){ 
+  	gulp.start('builder:compile'); 
+  }
+  else {
+   	console.log('No builder:compile task found. Did the gulpfile.js load?');
+   	};
+  });
+}
+
+
